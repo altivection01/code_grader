@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Problem — Code Grader{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex align-items-center mb-4 gap-3">
+      <a href="{% if problem %}{% url 'problem_detail' problem.pk %}{% else %}{% url 'problem_list' %}{% endif %}"
+         class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h1 class="h3 mb-0">{{ action }} Problem</h1>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+              Problem Description
+            </label>
+            <div class="form-text mb-1">Shown to students. Describe what their code should do.</div>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.grading_criteria.id_for_label }}" class="form-label fw-semibold">
+              Grading Criteria
+            </label>
+            <div class="form-text mb-1">
+              Claude will use these criteria to evaluate submissions. Be as specific as you like —
+              mention correctness, edge cases, style, efficiency, etc.
+            </div>
+            {{ form.grading_criteria }}
+            {% if form.grading_criteria.errors %}
+            <div class="text-danger small mt-1">{{ form.grading_criteria.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="{{ form.example_input.id_for_label }}" class="form-label fw-semibold">
+                Example Input <span class="fw-normal text-muted">(optional)</span>
+              </label>
+              {{ form.example_input }}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.example_output.id_for_label }}" class="form-label fw-semibold">
+                Example Output <span class="fw-normal text-muted">(optional)</span>
+              </label>
+              {{ form.example_output }}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>{{ action }} Problem
+            </button>
+            <a href="{% if problem %}{% url 'problem_detail' problem.pk %}{% else %}{% url 'problem_list' %}{% endif %}"
+               class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

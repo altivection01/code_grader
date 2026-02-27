@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Problem — Code Grader{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-danger">
+      <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-trash me-2"></i>Delete Problem
+      </div>
+      <div class="card-body">
+        <p>Are you sure you want to delete <strong>{{ problem.title }}</strong>?</p>
+        <p class="text-muted small">
+          This will also delete all {{ problem.submissions.count }} submission{{ problem.submissions.count|pluralize }}
+          associated with this problem. This action cannot be undone.
+        </p>
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i>Yes, delete it
+          </button>
+          <a href="{% url 'problem_detail' problem.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Submission #{{ submission.pk }} — Code Grader{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="{% url 'problem_detail' submission.problem.pk %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h1 class="h4 mb-0">Submission #{{ submission.pk }}</h1>
+    <div class="text-muted small">
+      Problem: <a href="{% url 'problem_detail' submission.problem.pk %}">{{ submission.problem.title }}</a>
+      &middot; {{ submission.submitted_at|date:"M d, Y H:i" }}
+    </div>
+  </div>
+</div>
+
+{% if submission.status == 'graded' %}
+<!-- Grade banner -->
+<div class="card shadow-sm mb-4 border-0 bg-dark text-white">
+  <div class="card-body py-4 d-flex align-items-center gap-4">
+    <div class="text-center">
+      <div class="display-2 fw-bold text-{{ submission.score_color }}">{{ submission.score }}</div>
+      <div class="text-muted small">out of 100</div>
+    </div>
+    <div class="vr opacity-25 mx-2" style="height: 80px;"></div>
+    <div>
+      <div class="display-4 fw-bold text-{{ submission.score_color }}">{{ submission.score_letter }}</div>
+    </div>
+    <div class="ms-3 flex-grow-1">
+      <div class="fs-5 fw-semibold mb-1">
+        {% if submission.score >= 90 %}Excellent work!
+        {% elif submission.score >= 80 %}Good job!
+        {% elif submission.score >= 70 %}Passing — room to improve.
+        {% elif submission.score >= 60 %}Needs some work.
+        {% else %}Needs significant improvement.
+        {% endif %}
+      </div>
+      <div class="progress mt-2" style="height: 8px; width: 240px;">
+        <div class="progress-bar bg-{{ submission.score_color }}"
+             style="width: {{ submission.score }}%"></div>
+      </div>
+    </div>
+    {% if submission.graded_at %}
+    <div class="text-muted small text-end ms-auto">
+      Graded<br>{{ submission.graded_at|date:"M d, Y H:i" }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Feedback -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold bg-white">
+    <i class="bi bi-robot me-2"></i>Claude's Feedback
+  </div>
+  <div class="card-body feedback-body">
+    <div class="render-markdown">{{ submission.feedback }}</div>
+  </div>
+</div>
+
+{% elif submission.status == 'error' %}
+<div class="alert alert-danger d-flex gap-3 align-items-start">
+  <i class="bi bi-exclamation-triangle-fill fs-4 flex-shrink-0 mt-1"></i>
+  <div>
+    <strong>Grading failed.</strong>
+    <pre class="mb-0 mt-2 small">{{ submission.error_message }}</pre>
+  </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">
+  <i class="bi bi-hourglass-split me-2"></i>
+  This submission is currently <strong>{{ submission.get_status_display }}</strong>.
+</div>
+{% endif %}
+
+<!-- Submitted code -->
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold bg-white d-flex justify-content-between">
+    <span><i class="bi bi-code-slash me-2"></i>Submitted Code</span>
+    <a href="{% url 'problem_detail' submission.problem.pk %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-arrow-repeat me-1"></i>Try Again
+    </a>
+  </div>
+  <div class="card-body p-0 code-block">
+    <pre><code class="language-python">{{ submission.code }}</code></pre>
+  </div>
+</div>
+{% endblock %}

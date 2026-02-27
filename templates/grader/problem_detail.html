@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ problem.title }} — Code Grader{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="{% url 'problem_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h1 class="h3 mb-0 flex-grow-1">{{ problem.title }}</h1>
+  <a href="{% url 'problem_edit' problem.pk %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-pencil me-1"></i>Edit
+  </a>
+  <a href="{% url 'problem_delete' problem.pk %}" class="btn btn-sm btn-outline-danger">
+    <i class="bi bi-trash me-1"></i>Delete
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Left column: problem info + submission form -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-white">
+        <i class="bi bi-file-text me-2"></i>Problem Description
+      </div>
+      <div class="card-body">
+        <p class="mb-0" style="white-space: pre-wrap;">{{ problem.description }}</p>
+      </div>
+    </div>
+
+    {% if problem.example_input or problem.example_output %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-white">
+        <i class="bi bi-terminal me-2"></i>Examples
+      </div>
+      <div class="card-body">
+        {% if problem.example_input %}
+        <p class="mb-1 small fw-semibold text-muted">Input:</p>
+        <pre class="bg-light rounded p-2 mb-3"><code>{{ problem.example_input }}</code></pre>
+        {% endif %}
+        {% if problem.example_output %}
+        <p class="mb-1 small fw-semibold text-muted">Output:</p>
+        <pre class="bg-light rounded p-2 mb-0"><code>{{ problem.example_output }}</code></pre>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-white">
+        <i class="bi bi-clipboard-check me-2"></i>Grading Criteria
+      </div>
+      <div class="card-body">
+        <p class="mb-0 small" style="white-space: pre-wrap;">{{ problem.grading_criteria }}</p>
+      </div>
+    </div>
+
+    <!-- Submission form -->
+    <div class="card shadow-sm border-primary">
+      <div class="card-header fw-semibold bg-primary text-white">
+        <i class="bi bi-send me-2"></i>Submit Your Solution
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'submission_create' problem.pk %}">
+          {% csrf_token %}
+          {{ form.code }}
+          {% if form.code.errors %}
+          <div class="text-danger small mt-1">{{ form.code.errors }}</div>
+          {% endif %}
+          <button type="submit" class="btn btn-primary mt-3 w-100">
+            <i class="bi bi-robot me-2"></i>Submit &amp; Grade with Claude
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: past submissions -->
+  <div class="col-lg-6">
+    <h5 class="mb-3">
+      <i class="bi bi-clock-history me-2"></i>Past Submissions
+      <span class="badge bg-secondary ms-1">{{ submissions.count }}</span>
+    </h5>
+
+    {% if submissions %}
+    <div class="d-flex flex-column gap-3">
+      {% for sub in submissions %}
+      <a href="{% url 'submission_detail' sub.pk %}" class="text-decoration-none">
+        <div class="card shadow-sm hover-shadow">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="text-center" style="min-width: 56px;">
+              {% if sub.status == 'graded' %}
+              <span class="badge bg-{{ sub.score_color }} score-badge rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:56px;height:56px;font-size:1.1rem;">
+                {{ sub.score }}
+              </span>
+              {% elif sub.status == 'error' %}
+              <span class="badge bg-danger rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:56px;height:56px;font-size:1.4rem;">
+                <i class="bi bi-exclamation-triangle"></i>
+              </span>
+              {% else %}
+              <span class="badge bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:56px;height:56px;font-size:1.4rem;">
+                <i class="bi bi-hourglass-split"></i>
+              </span>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold text-dark">
+                {% if sub.status == 'graded' %}
+                Score: {{ sub.score }}/100
+                ({{ sub.score_letter }})
+                {% else %}
+                Status: {{ sub.get_status_display }}
+                {% endif %}
+              </div>
+              <div class="text-muted small text-truncate">
+                {{ sub.submitted_at|date:"M d, Y H:i" }}
+              </div>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted border rounded">
+      <i class="bi bi-inbox display-5 d-block mb-2"></i>
+      No submissions yet. Be the first!
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
