@@ -8,3 +8,5 @@ A generic quiz utility to evaluate responses to coding problems and score them u
 4. start the server: "python manage.py runserver"
 5. you can input questions and criteria at http://127.0.0.1:8000
 
+Note: Added 70 python programming challenge examples, a separate category for ML/AI theory, and some sample questions in it, along with the abilty to submit inline LaTeX formulas in answers. 
+
