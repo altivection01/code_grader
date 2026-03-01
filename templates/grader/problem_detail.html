@@ -1,13 +1,26 @@
 {% extends "base.html" %}
-
 {% block title %}{{ problem.title }} — Code Grader{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center mb-4 gap-3">
-  <a href="{% url 'problem_list' %}" class="btn btn-sm btn-outline-secondary">
+
+<div class="d-flex align-items-center mb-4 gap-3 flex-wrap">
+  <a href="{% if problem.is_theory %}{% url 'theory_list' %}{% else %}{% url 'coding_list' %}{% endif %}"
+     class="btn btn-sm btn-outline-secondary">
     <i class="bi bi-arrow-left"></i>
   </a>
-  <h1 class="h3 mb-0 flex-grow-1">{{ problem.title }}</h1>
+  <div class="flex-grow-1 min-w-0">
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge bg-{{ accent }} bg-opacity-10 text-{{ accent }} small">
+        {{ problem.subject_label }}
+      </span>
+      {% if problem.is_theory %}
+      <span class="badge bg-success bg-opacity-10 text-success small">
+        <i class="bi bi-calculator me-1"></i>LaTeX supported
+      </span>
+      {% endif %}
+    </div>
+    <h1 class="h3 mb-0">{{ problem.title }}</h1>
+  </div>
   <a href="{% url 'problem_edit' problem.pk %}" class="btn btn-sm btn-outline-secondary">
     <i class="bi bi-pencil me-1"></i>Edit
   </a>
@@ -17,14 +30,22 @@
 </div>
 
 <div class="row g-4">
-  <!-- Left column: problem info + submission form -->
+  <!-- ── Left column: problem + form ── -->
   <div class="col-lg-6">
+
+    <!-- Description -->
     <div class="card shadow-sm mb-4">
       <div class="card-header fw-semibold bg-white">
-        <i class="bi bi-file-text me-2"></i>Problem Description
+        <i class="bi bi-file-text me-2"></i>
+        {% if problem.is_theory %}Question{% else %}Problem Description{% endif %}
       </div>
       <div class="card-body">
+        {% if problem.is_theory %}
+        {# Render theory descriptions as markdown+LaTeX #}
+        <div class="render-markdown theory-description">{{ problem.description }}</div>
+        {% else %}
         <p class="mb-0" style="white-space: pre-wrap;">{{ problem.description }}</p>
+        {% endif %}
       </div>
     </div>
 
@@ -46,36 +67,53 @@
     </div>
     {% endif %}
 
+    <!-- Grading criteria -->
     <div class="card shadow-sm mb-4">
       <div class="card-header fw-semibold bg-white">
         <i class="bi bi-clipboard-check me-2"></i>Grading Criteria
       </div>
       <div class="card-body">
+        {% if problem.is_theory %}
+        <div class="render-markdown small">{{ problem.grading_criteria }}</div>
+        {% else %}
         <p class="mb-0 small" style="white-space: pre-wrap;">{{ problem.grading_criteria }}</p>
+        {% endif %}
       </div>
     </div>
 
     <!-- Submission form -->
-    <div class="card shadow-sm border-primary">
-      <div class="card-header fw-semibold bg-primary text-white">
+    <div class="card shadow-sm border-{{ accent }}">
+      <div class="card-header fw-semibold bg-{{ accent }} text-white">
+        {% if problem.is_theory %}
+        <i class="bi bi-pencil-square me-2"></i>Write Your Answer
+        {% else %}
         <i class="bi bi-send me-2"></i>Submit Your Solution
+        {% endif %}
       </div>
       <div class="card-body">
+        {% if problem.is_theory %}
+        <div class="alert alert-light border mb-3 small py-2">
+          <i class="bi bi-info-circle me-1 text-success"></i>
+          Supports <strong>Markdown</strong> and <strong>LaTeX</strong> &mdash;
+          inline: <code>$x^2$</code> &nbsp;|&nbsp; display: <code>$$\hat{\beta} = (X^TX)^{-1}X^Ty$$</code>
+        </div>
+        {% endif %}
         <form method="post" action="{% url 'submission_create' problem.pk %}">
           {% csrf_token %}
-          {{ form.code }}
-          {% if form.code.errors %}
-          <div class="text-danger small mt-1">{{ form.code.errors }}</div>
+          {{ form.answer }}
+          {% if form.answer.errors %}
+          <div class="text-danger small mt-1">{{ form.answer.errors }}</div>
           {% endif %}
-          <button type="submit" class="btn btn-primary mt-3 w-100">
-            <i class="bi bi-robot me-2"></i>Submit &amp; Grade with Claude
+          <button type="submit" class="btn btn-{{ accent }} mt-3 w-100">
+            <i class="bi bi-robot me-2"></i>{{ submit_label }}
           </button>
         </form>
       </div>
     </div>
+
   </div>
 
-  <!-- Right column: past submissions -->
+  <!-- ── Right column: past submissions ── -->
   <div class="col-lg-6">
     <h5 class="mb-3">
       <i class="bi bi-clock-history me-2"></i>Past Submissions
@@ -86,11 +124,12 @@
     <div class="d-flex flex-column gap-3">
       {% for sub in submissions %}
       <a href="{% url 'submission_detail' sub.pk %}" class="text-decoration-none">
-        <div class="card shadow-sm hover-shadow">
+        <div class="card shadow-sm">
           <div class="card-body d-flex align-items-center gap-3">
             <div class="text-center" style="min-width: 56px;">
               {% if sub.status == 'graded' %}
-              <span class="badge bg-{{ sub.score_color }} score-badge rounded-circle d-flex align-items-center justify-content-center"
+              <span class="badge bg-{{ sub.score_color }} rounded-circle d-flex align-items-center
+                           justify-content-center fw-bold"
                     style="width:56px;height:56px;font-size:1.1rem;">
                 {{ sub.score }}
               </span>
@@ -109,15 +148,12 @@
             <div class="flex-grow-1 min-w-0">
               <div class="fw-semibold text-dark">
                 {% if sub.status == 'graded' %}
-                Score: {{ sub.score }}/100
-                ({{ sub.score_letter }})
+                  Score: {{ sub.score }}/100 ({{ sub.score_letter }})
                 {% else %}
-                Status: {{ sub.get_status_display }}
+                  Status: {{ sub.get_status_display }}
                 {% endif %}
               </div>
-              <div class="text-muted small text-truncate">
-                {{ sub.submitted_at|date:"M d, Y H:i" }}
-              </div>
+              <div class="text-muted small">{{ sub.submitted_at|date:"M d, Y H:i" }}</div>
             </div>
             <i class="bi bi-chevron-right text-muted"></i>
           </div>
@@ -133,4 +169,5 @@
     {% endif %}
   </div>
 </div>
+
 {% endblock %}

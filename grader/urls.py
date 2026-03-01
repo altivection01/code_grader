@@ -2,8 +2,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Problems
-    path("", views.problem_list, name="problem_list"),
+    # Home
+    path("", views.home, name="home"),
+    # Category lists
+    path("coding/", views.coding_list, name="coding_list"),
+    path("coding/<str:subject>/", views.coding_list, name="coding_list_subject"),
+    path("theory/", views.theory_list, name="theory_list"),
+    path("theory/<str:subject>/", views.theory_list, name="theory_list_subject"),
+    # Problems CRUD
     path("problems/new/", views.problem_create, name="problem_create"),
     path("problems/<int:pk>/", views.problem_detail, name="problem_detail"),
     path("problems/<int:pk>/edit/", views.problem_edit, name="problem_edit"),

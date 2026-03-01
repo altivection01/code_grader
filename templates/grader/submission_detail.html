@@ -1,30 +1,33 @@
 {% extends "base.html" %}
-
 {% block title %}Submission #{{ submission.pk }} — Code Grader{% endblock %}
 
 {% block content %}
+
+{% with problem=submission.problem %}
+
 <div class="d-flex align-items-center mb-4 gap-3">
-  <a href="{% url 'problem_detail' submission.problem.pk %}" class="btn btn-sm btn-outline-secondary">
+  <a href="{% url 'problem_detail' problem.pk %}" class="btn btn-sm btn-outline-secondary">
     <i class="bi bi-arrow-left"></i>
   </a>
   <div>
     <h1 class="h4 mb-0">Submission #{{ submission.pk }}</h1>
     <div class="text-muted small">
-      Problem: <a href="{% url 'problem_detail' submission.problem.pk %}">{{ submission.problem.title }}</a>
+      <a href="{% url 'problem_detail' problem.pk %}">{{ problem.title }}</a>
       &middot; {{ submission.submitted_at|date:"M d, Y H:i" }}
     </div>
   </div>
 </div>
 
 {% if submission.status == 'graded' %}
-<!-- Grade banner -->
+
+<!-- Score banner -->
 <div class="card shadow-sm mb-4 border-0 bg-dark text-white">
-  <div class="card-body py-4 d-flex align-items-center gap-4">
+  <div class="card-body py-4 d-flex align-items-center gap-4 flex-wrap">
     <div class="text-center">
       <div class="display-2 fw-bold text-{{ submission.score_color }}">{{ submission.score }}</div>
       <div class="text-muted small">out of 100</div>
     </div>
-    <div class="vr opacity-25 mx-2" style="height: 80px;"></div>
+    <div class="vr opacity-25 mx-2 d-none d-sm-block" style="height: 80px;"></div>
     <div>
       <div class="display-4 fw-bold text-{{ submission.score_color }}">{{ submission.score_letter }}</div>
     </div>
@@ -37,7 +40,7 @@
         {% else %}Needs significant improvement.
         {% endif %}
       </div>
-      <div class="progress mt-2" style="height: 8px; width: 240px;">
+      <div class="progress mt-2" style="height: 8px; max-width: 240px;">
         <div class="progress-bar bg-{{ submission.score_color }}"
              style="width: {{ submission.score }}%"></div>
       </div>
@@ -50,7 +53,7 @@
   </div>
 </div>
 
-<!-- Feedback -->
+<!-- Feedback — rendered as markdown; MathJax processes any LaTeX in it -->
 <div class="card shadow-sm mb-4">
   <div class="card-header fw-semibold bg-white">
     <i class="bi bi-robot me-2"></i>Claude's Feedback
@@ -72,20 +75,33 @@
 {% else %}
 <div class="alert alert-info">
   <i class="bi bi-hourglass-split me-2"></i>
-  This submission is currently <strong>{{ submission.get_status_display }}</strong>.
+  This submission is <strong>{{ submission.get_status_display }}</strong>.
 </div>
 {% endif %}
 
-<!-- Submitted code -->
+<!-- Submitted answer — code block for coding, rendered text for theory -->
 <div class="card shadow-sm">
-  <div class="card-header fw-semibold bg-white d-flex justify-content-between">
+  <div class="card-header fw-semibold bg-white d-flex justify-content-between align-items-center">
+    {% if problem.is_theory %}
+    <span><i class="bi bi-pencil-square me-2"></i>Your Answer</span>
+    {% else %}
     <span><i class="bi bi-code-slash me-2"></i>Submitted Code</span>
-    <a href="{% url 'problem_detail' submission.problem.pk %}" class="btn btn-sm btn-primary">
+    {% endif %}
+    <a href="{% url 'problem_detail' problem.pk %}" class="btn btn-sm btn-{{ accent }}">
       <i class="bi bi-arrow-repeat me-1"></i>Try Again
     </a>
   </div>
-  <div class="card-body p-0 code-block">
-    <pre><code class="language-python">{{ submission.code }}</code></pre>
+
+  {% if problem.is_theory %}
+  <div class="card-body">
+    <div class="render-markdown theory-answer border rounded p-3 bg-light">{{ submission.answer }}</div>
   </div>
+  {% else %}
+  <div class="card-body p-0 code-block">
+    <pre><code class="language-python">{{ submission.answer }}</code></pre>
+  </div>
+  {% endif %}
 </div>
+
+{% endwith %}
 {% endblock %}

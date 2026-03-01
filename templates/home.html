@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Code Grader — Home{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+  <h1 class="display-5 fw-bold mb-2">
+    <i class="bi bi-mortarboard-fill text-primary me-2"></i>Code Grader
+  </h1>
+  <p class="lead text-muted">
+    Submit solutions and answers — graded instantly by Claude AI.
+  </p>
+</div>
+
+<div class="row g-4">
+
+  <!-- ── Coding card ── -->
+  <div class="col-lg-6">
+    <div class="card shadow h-100 border-0" style="border-top: 4px solid #0d6efd !important;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center mb-3 gap-3">
+          <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+            <i class="bi bi-code-slash text-primary fs-2"></i>
+          </div>
+          <div>
+            <h2 class="h4 mb-0 fw-bold">Python Coding</h2>
+            <span class="text-muted small">{{ total_coding }} problem{{ total_coding|pluralize }}</span>
+          </div>
+        </div>
+        <p class="text-muted mb-4">
+          Write Python solutions to hands-on challenges spanning core language features through
+          NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, and TensorFlow.
+          Claude evaluates your code for correctness, quality, and edge-case handling.
+        </p>
+
+        <div class="row g-2 mb-4">
+          {% for subject, label, count in coding_subjects %}
+          <div class="col-6">
+            <a href="{% url 'coding_list_subject' subject %}"
+               class="d-flex justify-content-between align-items-center text-decoration-none
+                      bg-light rounded-2 px-3 py-2 hover-bg-primary-subtle">
+              <span class="small fw-semibold text-dark">{{ label }}</span>
+              <span class="badge bg-primary rounded-pill">{{ count }}</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+
+        <a href="{% url 'coding_list' %}" class="btn btn-primary w-100">
+          <i class="bi bi-play-fill me-2"></i>Start Coding Challenges
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Theory card ── -->
+  <div class="col-lg-6">
+    <div class="card shadow h-100 border-0" style="border-top: 4px solid #198754 !important;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center mb-3 gap-3">
+          <div class="bg-success bg-opacity-10 rounded-3 p-3">
+            <i class="bi bi-journal-text text-success fs-2"></i>
+          </div>
+          <div>
+            <h2 class="h4 mb-0 fw-bold">ML/AI Theory</h2>
+            <span class="text-muted small">{{ total_theory }} question{{ total_theory|pluralize }}</span>
+          </div>
+        </div>
+        <p class="text-muted mb-4">
+          Demonstrate deep understanding of machine learning theory — derivations, mathematics,
+          and intuition. Write answers in Markdown with inline LaTeX
+          (e.g.&nbsp;<code>$\hat{\beta} = (X^TX)^{-1}X^Ty$</code>).
+          Claude grades conceptual accuracy, mathematical rigour, and completeness.
+        </p>
+
+        <div class="row g-2 mb-4">
+          {% for subject, label, count in theory_subjects %}
+          <div class="col-6">
+            <a href="{% url 'theory_list_subject' subject %}"
+               class="d-flex justify-content-between align-items-center text-decoration-none
+                      bg-light rounded-2 px-3 py-2">
+              <span class="small fw-semibold text-dark">{{ label }}</span>
+              <span class="badge bg-success rounded-pill">{{ count }}</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+
+        <a href="{% url 'theory_list' %}" class="btn btn-success w-100">
+          <i class="bi bi-lightbulb-fill me-2"></i>Start Theory Questions
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row mt-4">
+  <div class="col text-center text-muted small">
+    <i class="bi bi-robot me-1"></i>
+    All submissions graded by <strong>Claude claude-opus-4-6</strong> &mdash;
+    <a href="{% url 'problem_create' %}" class="text-muted">add your own problems</a>
+  </div>
+</div>
+{% endblock %}

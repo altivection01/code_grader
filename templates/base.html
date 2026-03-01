@@ -27,16 +27,29 @@
     .feedback-body h2, .feedback-body h3 { font-size: 1.1rem; margin-top: 1rem; }
     .feedback-body ul { padding-left: 1.2rem; }
   </style>
+  <!-- MathJax for LaTeX rendering in theory questions -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']], processEscapes: true },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'problem_list' %}">
-        <i class="bi bi-code-slash me-1"></i>Code Grader
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <i class="bi bi-mortarboard-fill me-1"></i>Code Grader
       </a>
       <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="{% url 'problem_list' %}">Problems</a>
+        <a class="nav-link" href="{% url 'coding_list' %}">
+          <i class="bi bi-code-slash me-1"></i>Python Coding
+        </a>
+        <a class="nav-link" href="{% url 'theory_list' %}">
+          <i class="bi bi-journal-text me-1"></i>ML/AI Theory
+        </a>
         <a class="nav-link btn btn-sm btn-primary ms-2 text-white px-3"
            href="{% url 'problem_create' %}">
           <i class="bi bi-plus-lg"></i> New Problem

@@ -1,22 +1,70 @@
 from django.db import models
 
+CODING_SUBJECT_AREAS = [
+    ("python_basics", "Python Basics"),
+    ("numpy", "NumPy"),
+    ("pandas", "Pandas"),
+    ("matplotlib", "Matplotlib"),
+    ("seaborn", "Seaborn"),
+    ("sklearn", "Scikit-learn"),
+    ("tensorflow", "TensorFlow"),
+]
+
+THEORY_SUBJECT_AREAS = [
+    ("regression", "Regression"),
+    ("trees_forests", "Trees & Forests"),
+    ("classification", "Classification & Clustering"),
+    ("neural_networks", "Neural Networks"),
+    ("generative_ai", "Generative AI for NLP"),
+]
+
+ALL_SUBJECT_AREAS = CODING_SUBJECT_AREAS + THEORY_SUBJECT_AREAS
+
 
 class Problem(models.Model):
+    class Category(models.TextChoices):
+        CODING = "coding", "Python Coding"
+        THEORY = "theory", "ML/AI Theory"
+
     title = models.CharField(max_length=200)
     description = models.TextField(help_text="Full problem description shown to students.")
     grading_criteria = models.TextField(
-        help_text="Criteria Claude will use to evaluate submissions (e.g. correctness, edge cases, style)."
+        help_text="Criteria Claude will use to evaluate submissions."
     )
-    example_input = models.TextField(blank=True, help_text="Optional example input for the student.")
-    example_output = models.TextField(blank=True, help_text="Optional expected output for the student.")
+    example_input = models.TextField(blank=True)
+    example_output = models.TextField(blank=True)
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        default=Category.CODING,
+        db_index=True,
+    )
+    subject_area = models.CharField(
+        max_length=50,
+        choices=ALL_SUBJECT_AREAS,
+        default="python_basics",
+        db_index=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["subject_area", "title"]
 
     def __str__(self):
         return self.title
+
+    @property
+    def subject_label(self):
+        return dict(ALL_SUBJECT_AREAS).get(self.subject_area, self.subject_area)
+
+    @property
+    def is_theory(self):
+        return self.category == self.Category.THEORY
+
+    @property
+    def is_coding(self):
+        return self.category == self.Category.CODING
 
 
 class Submission(models.Model):
@@ -27,7 +75,8 @@ class Submission(models.Model):
         ERROR = "error", "Error"
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name="submissions")
-    code = models.TextField()
+    # Stores Python code for coding problems; written prose/LaTeX for theory problems
+    answer = models.TextField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     score = models.IntegerField(null=True, blank=True, help_text="Score out of 100")
     feedback = models.TextField(blank=True, help_text="Claude's detailed feedback")

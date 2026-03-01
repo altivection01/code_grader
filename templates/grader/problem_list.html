@@ -1,15 +1,34 @@
 {% extends "base.html" %}
-
-{% block title %}Problems — Code Grader{% endblock %}
+{% block title %}{{ category_label }} — Code Grader{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h3 mb-0">
-    <i class="bi bi-list-task me-2"></i>Programming Problems
+
+<div class="d-flex align-items-center mb-4 gap-3 flex-wrap">
+  <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h1 class="h3 mb-0 flex-grow-1">
+    <i class="bi {{ icon }} me-2 text-{{ accent }}"></i>{{ category_label }}
   </h1>
-  <a href="{% url 'problem_create' %}" class="btn btn-primary">
+  <a href="{% url 'problem_create' %}" class="btn btn-sm btn-{{ accent }}">
     <i class="bi bi-plus-lg me-1"></i>New Problem
   </a>
+</div>
+
+<!-- Subject-area filter tabs -->
+<div class="mb-4">
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% if category == 'coding' %}{% url 'coding_list' %}{% else %}{% url 'theory_list' %}{% endif %}"
+       class="btn btn-sm {% if not active_subject %}btn-{{ accent }}{% else %}btn-outline-{{ accent }}{% endif %}">
+      All
+    </a>
+    {% for s, label in subjects %}
+    <a href="{% if category == 'coding' %}{% url 'coding_list_subject' s %}{% else %}{% url 'theory_list_subject' s %}{% endif %}"
+       class="btn btn-sm {% if active_subject == s %}btn-{{ accent }}{% else %}btn-outline-{{ accent }}{% endif %}">
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
 </div>
 
 {% if problems %}
@@ -18,18 +37,26 @@
   <div class="col-md-6 col-lg-4">
     <div class="card h-100 shadow-sm">
       <div class="card-body">
-        <h5 class="card-title">{{ problem.title }}</h5>
+        <div class="mb-2">
+          <span class="badge bg-{{ accent }} bg-opacity-10 text-{{ accent }} small">
+            {{ problem.subject_label }}
+          </span>
+        </div>
+        <h5 class="card-title">
+          {{ problem.title|cut:"[Python Basics] "|cut:"[NumPy] "|cut:"[Pandas] "|cut:"[Matplotlib] "|cut:"[Seaborn] "|cut:"[Scikit-learn] "|cut:"[TensorFlow] "|cut:"[Regression] "|cut:"[Trees & Forests] "|cut:"[Classification] "|cut:"[Neural Networks] "|cut:"[Generative AI] " }}
+        </h5>
         <p class="card-text text-muted small">
-          {{ problem.description|truncatechars:120 }}
+          {{ problem.description|truncatechars:110 }}
         </p>
         <div class="d-flex gap-2 text-muted small mt-2">
           <span><i class="bi bi-send me-1"></i>{{ problem.submissions.count }} submission{{ problem.submissions.count|pluralize }}</span>
-          <span class="ms-auto">{{ problem.created_at|date:"M d, Y" }}</span>
         </div>
       </div>
       <div class="card-footer bg-transparent d-flex gap-2">
-        <a href="{% url 'problem_detail' problem.pk %}" class="btn btn-sm btn-outline-primary flex-grow-1">
-          <i class="bi bi-eye me-1"></i>View
+        <a href="{% url 'problem_detail' problem.pk %}" class="btn btn-sm btn-outline-{{ accent }} flex-grow-1">
+          {% if category == 'theory' %}<i class="bi bi-pencil-square me-1"></i>Answer
+          {% else %}<i class="bi bi-code-slash me-1"></i>Solve
+          {% endif %}
         </a>
         <a href="{% url 'problem_edit' problem.pk %}" class="btn btn-sm btn-outline-secondary">
           <i class="bi bi-pencil"></i>
@@ -44,11 +71,12 @@
 </div>
 {% else %}
 <div class="text-center py-5 text-muted">
-  <i class="bi bi-journal-code display-3 d-block mb-3"></i>
-  <p class="lead">No problems yet.</p>
-  <a href="{% url 'problem_create' %}" class="btn btn-primary mt-2">
-    <i class="bi bi-plus-lg me-1"></i>Create your first problem
+  <i class="bi bi-inbox display-3 d-block mb-3"></i>
+  <p class="lead">No problems here yet.</p>
+  <a href="{% url 'problem_create' %}" class="btn btn-{{ accent }} mt-2">
+    <i class="bi bi-plus-lg me-1"></i>Create one
   </a>
 </div>
 {% endif %}
+
 {% endblock %}
